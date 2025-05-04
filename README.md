@@ -98,6 +98,19 @@ ffmpeg -i [INPUT_VIDEO] -vf "subtitles=spanish.srt:force_style='FontSize=24,Alig
 
 Remove temporary files (audio.mp3, audio.srt, spanish.srt).
 
+### Step 7: Optional Video Compression
+
+If the resulting video file is too large, compress it with FFmpeg:
+
+```bash
+ffmpeg -i [INPUT_VIDEO] -c:v libx264 -crf 35 -preset veryfast -c:a aac -b:a 64k [COMPRESSED_OUTPUT] -y
+```
+
+Parameters explained:
+- `-crf 35`: Controls quality (higher values = lower quality, smaller file). Range: 0-51, 18-28 is typically visually lossless
+- `-preset veryfast`: Controls encoding speed vs compression efficiency
+- `-c:a aac -b:a 64k`: Compresses audio to 64kbps AAC
+
 ## Translation Guidelines for AI
 
 When translating the subtitles, the AI should:
@@ -137,7 +150,9 @@ For local video file:
 3. Transcribed to English: whisper audio.mp3 --model base --language en --output_format srt
 4. Translated subtitles from English to Spanish (preserving format)
 5. Embedded subtitles: ffmpeg -i lecture.mp4 -vf "subtitles=spanish.srt:force_style='FontSize=24,Alignment=2'" -c:a copy lecture_es.mp4 -y
-6. Returned lecture_es.mp4 with Spanish subtitles
+6. Removed temporary files
+7. Optional compression: ffmpeg -i lecture_es.mp4 -c:v libx264 -crf 35 -preset veryfast -c:a aac -b:a 64k lecture_es_compressed.mp4 -y
+8. Returned final video with Spanish subtitles
 ```
 
 For YouTube video:
@@ -148,5 +163,7 @@ For YouTube video:
 4. Transcribed to English: whisper audio.mp3 --model base --language en --output_format srt
 5. Translated subtitles from English to Spanish (preserving format)
 6. Embedded subtitles: ffmpeg -i video.mp4 -vf "subtitles=spanish.srt:force_style='FontSize=24,Alignment=2'" -c:a copy video_es.mp4 -y
-7. Returned video_es.mp4 with Spanish subtitles
+7. Removed temporary files
+8. Optional compression: ffmpeg -i video_es.mp4 -c:v libx264 -crf 35 -preset veryfast -c:a aac -b:a 64k video_es_compressed.mp4 -y
+9. Returned final video with Spanish subtitles
 ```
