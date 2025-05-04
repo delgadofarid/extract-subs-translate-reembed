@@ -14,25 +14,48 @@ The task involves:
 
 For the AI to execute this task, the user's system should have:
 
-- FFmpeg installed
-- Whisper AI installed
+- FFmpeg installed (system dependency)
 - Python 3.8+
+
+### Python Dependencies
+
+The following Python packages are required:
+- Whisper AI (`openai-whisper`)
+- yt-dlp (`yt-dlp`)
+
+**Recommendation**: It's strongly recommended to install Python dependencies in a dedicated virtual environment to avoid conflicts with other projects:
+
+```bash
+# Create and activate a virtual environment
+python -m venv subtitle-env
+source subtitle-env/bin/activate  # On Windows use: subtitle-env\Scripts\activate
+
+# Install the required dependencies
+pip install openai-whisper yt-dlp
+```
 
 ## Complete Process for AI Execution
 
 ### Input
 
-- Video file path provided by the user
+- Video file path provided by the user (or YouTube URL)
 - Optional output path (defaults to input_name_es.mp4)
 
-### Step 1: Extract Audio from Video
+### Step 1: Download Video (if from YouTube)
+
+If the input is a YouTube URL, the AI should run:
+```bash
+yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' [YOUTUBE_URL] -o video.mp4
+```
+
+### Step 2: Extract Audio from Video
 
 The AI should run:
 ```bash
 ffmpeg -i [INPUT_VIDEO] -q:a 0 -map a -c:a mp3 audio.mp3 -y
 ```
 
-### Step 2: Transcribe Audio to English Text
+### Step 3: Transcribe Audio to English Text
 
 The AI should run:
 ```bash
@@ -41,7 +64,7 @@ whisper audio.mp3 --model base --language en --output_format srt
 
 This will generate an SRT file (audio.srt) with English subtitles.
 
-### Step 3: Translate Subtitles to Spanish
+### Step 4: Translate Subtitles to Spanish
 
 The AI should:
 1. Read the generated SRT file
@@ -64,14 +87,14 @@ Example SRT format to preserve:
 [English text to translate to Spanish]
 ```
 
-### Step 4: Embed Subtitles into Video
+### Step 5: Embed Subtitles into Video
 
 The AI should run:
 ```bash
 ffmpeg -i [INPUT_VIDEO] -vf "subtitles=spanish.srt:force_style='FontSize=24,Alignment=2'" -c:a copy [OUTPUT_VIDEO] -y
 ```
 
-### Step 5: Clean Up
+### Step 6: Clean Up
 
 Remove temporary files (audio.mp3, audio.srt, spanish.srt).
 
@@ -107,6 +130,7 @@ If the subtitle embedding fails:
 
 ## Example Execution for AI
 
+For local video file:
 ```
 1. Received video file: lecture.mp4
 2. Extracted audio: ffmpeg -i lecture.mp4 -q:a 0 -map a -c:a mp3 audio.mp3 -y
@@ -114,4 +138,15 @@ If the subtitle embedding fails:
 4. Translated subtitles from English to Spanish (preserving format)
 5. Embedded subtitles: ffmpeg -i lecture.mp4 -vf "subtitles=spanish.srt:force_style='FontSize=24,Alignment=2'" -c:a copy lecture_es.mp4 -y
 6. Returned lecture_es.mp4 with Spanish subtitles
+```
+
+For YouTube video:
+```
+1. Received YouTube URL: https://youtu.be/example
+2. Downloaded video: yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' https://youtu.be/example -o video.mp4
+3. Extracted audio: ffmpeg -i video.mp4 -q:a 0 -map a -c:a mp3 audio.mp3 -y
+4. Transcribed to English: whisper audio.mp3 --model base --language en --output_format srt
+5. Translated subtitles from English to Spanish (preserving format)
+6. Embedded subtitles: ffmpeg -i video.mp4 -vf "subtitles=spanish.srt:force_style='FontSize=24,Alignment=2'" -c:a copy video_es.mp4 -y
+7. Returned video_es.mp4 with Spanish subtitles
 ```
